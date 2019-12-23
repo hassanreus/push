@@ -1,0 +1,5 @@
+---
+- name: Restarts Postfix
+  service:
+      name: postfix
+      state: restarted

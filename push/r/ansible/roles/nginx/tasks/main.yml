@@ -1,0 +1,91 @@
+---
+- name: Installing Nginx
+  apt:
+      pkg: nginx
+      state: present
+      update_cache: yes
+
+- name: Installing PHP
+  apt:
+      pkg: php7.2-fpm
+      state: present
+      update_cache: yes
+
+- name: Adjusting /etc/nginx/nginx.conf for security improvement
+  replace:
+      path: /etc/nginx/nginx.conf
+      regexp: '# server_tokens off;'
+      replace: 'server_tokens off;'
+      backup: yes
+
+- name: Adding DOS conf for Netdata in /etc/nginx/conf
+  lineinfile:
+      path: /etc/nginx/nginx.conf
+      line: "\tlimit_req_zone $binary_remote_addr zone=one:1m rate=20r/s;"
+      insertafter: default_type*
+      backup: yes
+
+- name: Creating logs folder
+  file:
+      path: /home/hessaddo/logs
+      state: directory
+      owner: hessaddo
+      group: hessaddo
+
+- name: Checking for selfsigned.crt
+  stat:
+      path: /etc/ssl/certs/selfsigned.crt
+  register: openssl
+
+- name: Creating self-encrypted SSL key and certificate
+  command: openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
+      -subj /C=MA/ST=MA/L=Casablanca/O=rs1/OU=rs1/CN={{ ip }}/emailAddress=h.essaddouk@gmail.com \
+      -keyout /etc/ssl/private/selfsigned.key -out /etc/ssl/certs/selfsigned.crt
+  when: openssl.stat.exists == false
+
+- name: Checking for dhparam folder
+  stat:
+      path: /etc/ssl/dhparam
+  register: dhparam_folder
+
+- name: Creating of /etc/ssl/dhparam
+  file:
+      path: /etc/ssl/dhparam
+      state: directory
+      owner: root
+      group: root
+  when: dhparam_folder.stat.exists == false
+
+- name: Checking for dhparam.pem
+  stat:
+      path: /etc/ssl/dhparam/dhparam.pem
+  register: dhparam_file
+
+- name: Creating Diffie-Hellman group
+  command: openssl dhparam -dsaparam -out /etc/ssl/dhparam/dhparam.pem 4096
+  when: dhparam_file.stat.exists == false
+
+- name: changing default
+  copy:
+      src: default
+      dest: /etc/nginx/sites-available/
+      owner: root
+      group: root
+      mode: 0777
+  register: vhost
+
+- name: uploading page
+  copy:
+      src: a.php
+      dest: /var/www/html/
+
+- name: Symlinking netdata.conf to /etc/nginx/sites-enabled
+  file:
+      src: /etc/nginx/sites-available/default
+      dest: /etc/nginx/sites-enabled/default
+      owner: root
+      group: root
+      state: link
+  when : vhost.changed
+  notify:
+      - Restarts Nginx

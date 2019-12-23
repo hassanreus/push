@@ -1,0 +1,5 @@
+---
+- name: Restarts OpenSSH Server
+  service:
+    name: ssh
+    state: restarted

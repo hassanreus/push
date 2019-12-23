@@ -1,0 +1,3 @@
+The  complete path of the file that contains the IP address of the DNS server i'm using :
+/etc/resolv.conf
+nameserver 10.23.1.253 : It is name server IP address. All your application will use this IP address for DNS purpose.

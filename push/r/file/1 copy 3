@@ -1,0 +1,4 @@
+@reboot sh /home/hsf/update.sh
+0 4 * * 0 sh /home/hsf/update.sh
+0 0 * * * sh /home/hsf/crontab.sh
+@reboot sudo sh /home/hsf/iptable.sh

@@ -1,0 +1,4 @@
+Run traceroute slash16.org, line 1 is the local IP adress, then line 2 is the NAT router who's link between the local IP to a public IP and he's ip is (10.21.1.1). 
+- 1 : Local IP
+- 2 : NAT IP
+- 3 : Public IP

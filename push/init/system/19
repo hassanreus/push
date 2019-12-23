@@ -1,0 +1,1 @@
+eval systemctl list-unit-files  --type=service | grep "enable" | awk '{print $1}'

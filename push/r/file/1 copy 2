@@ -1,0 +1,52 @@
+# On vide les règles déjà existantes
+iptables -F
+iptables -X
+
+# On refuse toutes les connexions
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT DROP
+
+# On autorise le loop-back (localhost)
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+
+# On autorise les connexions déjà établie
+iptables -A INPUT -m state --state ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -m state --state ESTABLISHED -j ACCEPT
+
+# On autorise le ping
+iptables -A INPUT -p icmp -j ACCEPT
+iptables -A OUTPUT -p icmp -j ACCEPT
+
+# On autorise le SSH (à adapter suivant votre cas)
+iptables -A INPUT -p tcp --dport 19 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 19 -j ACCEPT
+
+# HTTP
+iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+# Protecting portscans
+# Attacking IP will be locked for 24 hours (3600 x 24 = 86400 Seconds)
+iptables -A INPUT -m recent --name portscan --rcheck --seconds 60 -j DROP
+iptables -A FORWARD -m recent --name portscan --rcheck --seconds 60 -j DROP
+
+# Remove attacking IP after 24 hours
+iptables -A INPUT -m recent --name portscan --remove
+iptables -A FORWARD -m recent --name portscan --remove
+
+# These rules add scanners to the portscan list, and log the attempt.
+iptables -A INPUT -p tcp -m tcp --dport 139 -m recent --name portscan --set -j LOG --log-prefix "portscan:"
+iptables -A INPUT -p tcp -m tcp --dport 139 -m recent --name portscan --set -j DROP
+
+iptables -A FORWARD -p tcp -m tcp --dport 139 -m recent --name portscan --set -j LOG --log-prefix "portscan:"
+iptables -A FORWARD -p tcp -m tcp --dport 139 -m recent --name portscan --set -j DROP
+
+# Allow ping means ICMP port is open (If you do not want ping replace ACCEPT with REJECT)
+iptables -A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
+
+# Lastly reject All INPUT traffic
+iptables -A INPUT -j REJECT

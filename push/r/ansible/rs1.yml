@@ -1,0 +1,16 @@
+---
+- hosts: local
+  vars:
+    ip: 10.11.7.5
+    gateway: 10.11.7.254
+  connection: local
+  become: yes
+  become_user: root
+  roles:
+          - netplan
+          - openssh
+          - nginx
+          - postfix
+          - ufw
+          - file2ban
+          - cron_script
