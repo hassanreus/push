@@ -1,5 +1,0 @@
----
-- name: Restarts Fail2Ban
-  service:
-      name: fail2ban
-      state: restarted

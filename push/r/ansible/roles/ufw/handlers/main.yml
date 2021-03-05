@@ -1,5 +1,0 @@
----
-- name: Restarts UFW
-  service:
-      name: ufw
-      state: restarted

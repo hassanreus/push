@@ -1,8 +1,0 @@
-f1=$(cat file1)
-f2=$(cat /etc/crontab)
-
-if [ "$f1" != "$f2" ]
-then
-	echo "Warning !!!" | mail -s "the crontabl was changed ." root
-	cat /etc/crontab > file1
-fi

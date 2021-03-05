@@ -1,1 +1,0 @@
-chflags uimmutable president.txt
